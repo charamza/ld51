@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "yarn web:dev",
     "web:dev": "vite",
-    "web:build": "tsc && vite build",
+    "web:build": "tsc -p game/tsconfig.json && vite build",
     "web:preview": "vite preview",
     "server:dev": "nodemon server/src/index.ts",
     "server:start": "node server/dist/index",
