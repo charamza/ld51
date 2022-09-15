@@ -1,8 +1,10 @@
+import path from "path";
+
 /** @type {import('vite').UserConfig} */
 export default {
-  root: "game",
+  root: path.resolve(__dirname, "game"),
   server: {
     port: 3000,
   },
-  envDir: ".",
+  envDir: path.resolve(__dirname, "."),
 };
