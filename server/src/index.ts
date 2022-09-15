@@ -2,6 +2,8 @@ import express from "express";
 import { WebSocketServer } from "ws";
 import cors from "cors";
 
+(await import("dotenv-flow")).config();
+
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -13,7 +15,7 @@ wsServer.on("connection", (socket) => {
 app.use(cors("*"));
 
 app.get(["/", "/:name"], (req, res) => {
-  const greeting = "Hello From Node on Fly!!!";
+  const greeting = `Hello from ${process.env.VITE_BACKEND_SECURE === "true" ? "production" : "local"} node on Fly!!!`;
   const name = req.params["name"];
   res.send(greeting + (name ? ` and hello to ${name}` : ""));
 });
