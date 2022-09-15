@@ -20,6 +20,7 @@ COPY package.json yarn.lock ./
 RUN yarn --prod --frozen-lockfile
 
 COPY --from=0 /usr/server/dist ./server/dist
+COPY .env* ./
 
 EXPOSE 8080
 
