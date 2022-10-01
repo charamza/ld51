@@ -29,14 +29,17 @@ export default class Player extends GameObject {
     const frontAccel = 0.05;
     const backAccel = 0.025;
     const turnAccel = 5;
+    const turnSpeedDecel = 1.02;
     const planetSafeLandingMaxAngle = 40;
 
     if (Input.isKeyDown("ArrowLeft")) {
       this.rot -= turnAccel;
+      this.a /= turnSpeedDecel;
       this.emitRightParticles();
     }
     if (Input.isKeyDown("ArrowRight")) {
       this.rot += turnAccel;
+      this.a /= turnSpeedDecel;
       this.emitLeftParticles();
     }
     if (Input.isKeyDown("ArrowUp")) {
@@ -63,7 +66,7 @@ export default class Player extends GameObject {
       const planetAngle = this.getAngleTo(closestPlanet);
       const planetDistance = closestPlanet.getDistanceTo(this);
       const planetInfluence = 1 - clamp(planetDistance / 500, 0.1, 1); // 0.0 - 0.9
-      const planetSize = closestPlanet.getSize()[0] / 60;
+      const planetWeight = 6; //closestPlanet.getSize()[0] / 60;
 
       const planetAngleDiff = getAnglesDiff(this.rot, planetAngle);
 
@@ -71,7 +74,7 @@ export default class Player extends GameObject {
       this.a += planetAcceleration;
       if (Math.abs(planetAngleDiff) < 180 - planetSafeLandingMaxAngle) {
         this.rot =
-          planetAngleDiff > 0 ? this.rot - (planetInfluence * 5) / planetSize : this.rot + (planetInfluence * 5) / planetSize;
+          planetAngleDiff > 0 ? this.rot - (planetInfluence * 5) / planetWeight : this.rot + (planetInfluence * 5) / planetWeight;
       }
     }
 
@@ -84,12 +87,10 @@ export default class Player extends GameObject {
 
       if (dist <= 0) {
         if (!(Input.isKeyDown("ArrowUp") && Math.abs(angleDiff) < planetSafeLandingMaxAngle)) this.a = 0;
-        isColliding = true;
-
-        // console.log(`Landed under angle ${Math.floor(angleDiff * 100) / 100}°`);
 
         if (Math.abs(angleDiff) < planetSafeLandingMaxAngle) {
-          this.rot = planetAngle;
+          closestPlanet.moveWithPlanet(this, dt);
+          this.pos = addVec2(this.pos, angleMovement(this.rot, -(dist + 0.001)));
         } else {
           this.emitCrashParticles();
           this.delete();
@@ -110,7 +111,7 @@ export default class Player extends GameObject {
     ctx.translate(pos[0], pos[1]);
     ctx.rotate((this.rot * Math.PI) / 180);
 
-    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
     //ctx.strokeRect(pos[0] - size[0] / 2, pos[1] - size[1] / 2, size[0], size[1]);
     ctx.beginPath();
     ctx.moveTo(0, 0 - size[1] / 2);
@@ -118,14 +119,14 @@ export default class Player extends GameObject {
     ctx.lineTo(0, 0 + size[1] / 4);
     ctx.lineTo(0 - size[0] / 2, 0 + size[1] / 2);
     ctx.lineTo(0, 0 - size[1] / 2);
-    ctx.stroke();
+    ctx.fill();
 
     ctx.restore();
   }
 
-  private emitThrustParticle(rot: number, a: number = 0): void {
+  private emitThrustParticle(rot: number, a: number = 0, additionalDistance?: number): void {
     const rads = (rot / 180) * Math.PI;
-    const distance = 10;
+    const distance = 10 + (additionalDistance ?? 0);
     if (a < 100) a = 100;
     if (a > 800) a = 800;
     this.world.add(
@@ -144,7 +145,7 @@ export default class Player extends GameObject {
 
   private emitBackParticles(): void {
     for (let i = 0; i < 5; i++) {
-      this.emitThrustParticle(this.rot - 180);
+      this.emitThrustParticle(this.rot - 180, 0, Math.random() * 5 * this.a);
     }
   }
 
@@ -155,13 +156,13 @@ export default class Player extends GameObject {
 
   private emitLeftParticles(): void {
     for (let i = 0; i < 2; i++) {
-      this.emitThrustParticle(this.rot - 45, this.a * 75);
+      this.emitThrustParticle(this.rot - 30, this.a * 75);
     }
   }
 
   private emitRightParticles(): void {
     for (let i = 0; i < 2; i++) {
-      this.emitThrustParticle(this.rot + 45, this.a * 75);
+      this.emitThrustParticle(this.rot + 30, this.a * 75);
     }
   }
 

@@ -16,8 +16,8 @@ export default class World {
 
     this.objects.push(
       new Planet(this, {
-        pos: [-100, -100],
-        size: 350,
+        pos: [-1000, -1000],
+        size: 1350,
       })
     );
     this.objects.push(

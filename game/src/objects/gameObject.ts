@@ -1,5 +1,5 @@
 import World from "../game/world";
-import { Vec2, Vec4 } from "../utils/vectors";
+import { addVec2, Vec2, Vec4 } from "../utils/vectors";
 import GameComponent from "./gameComponent";
 
 export default class GameObject {
@@ -27,8 +27,20 @@ export default class GameObject {
     return this.pos;
   }
 
+  public movePos(dpos: Vec2): void {
+    this.pos = addVec2(this.pos, dpos);
+  }
+
   public getSize(): Vec2 {
     return this.size;
+  }
+
+  public getRot(): number {
+    return this.rot;
+  }
+
+  public setRot(rot: number): void {
+    this.rot = rot;
   }
 
   public update(dt: number): void {
@@ -43,7 +55,7 @@ export default class GameObject {
     const [x1, y1] = this.pos;
     const [x2, y2] = other.pos;
 
-    return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2) - (this.size[0] + other.size[0]) / 2;
+    return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2) - (this.size[1] + other.size[1]) / 2;
   }
 
   public getAngleTo(other: GameObject): number {
