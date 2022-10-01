@@ -17,7 +17,7 @@ import Input from "./utils/input";
 async function main() {
   Input.init();
   const game = new Game();
-  game.start();
+  game.init();
 }
 
 main();

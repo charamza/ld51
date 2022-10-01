@@ -13,6 +13,8 @@ export default class Game {
   public camera: Camera;
   public gui: GUI;
 
+  public paused: boolean;
+
   constructor() {
     this.canvas = document.getElementById("game") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -25,8 +27,10 @@ export default class Game {
 
     this.camera = new Camera(this);
     this.camera.focusObject(player);
+    this.camera.update(0);
 
     this.gui = new GUI(this);
+    this.paused = true;
   }
 
   private onWindowResize(): void {
@@ -34,7 +38,7 @@ export default class Game {
     this.canvasHeight = this.canvas.height = window.innerHeight;
   }
 
-  public start(): void {
+  public init(): void {
     let lastTime = Date.now();
     let lastSecond = Math.floor(Date.now() / 1000);
     let afps = 0;
@@ -60,8 +64,10 @@ export default class Game {
   }
 
   public update(dt: number): void {
-    this.world.update(dt);
-    this.camera.update(dt);
+    if (!this.paused) {
+      this.world.update(dt);
+      this.camera.update(dt);
+    }
   }
 
   public render(): void {
@@ -72,6 +78,10 @@ export default class Game {
     this.camera.translateContext(this.ctx);
     this.world.render(this.ctx);
     this.ctx.restore();
+  }
+
+  public start(): void {
+    this.paused = false;
   }
 
   public restart(): void {

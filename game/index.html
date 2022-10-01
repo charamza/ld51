@@ -11,9 +11,30 @@
     <canvas id="game">Your browser doesn't support canvas.</canvas>
     <div id="app"></div>
     <div id="screens">
-      <div id="startScreen" class="screen">
-        <h1>LD51</h1>
-        <button id="startButton">Start</button>
+      <div id="startScreen" class="screen show">
+        <div class="screen-inner" style="max-width: 500px">
+          <h1>LD51 - Picoverse</h1>
+          <p>
+            <div class="label">How to play?</div>
+            <div class="description">
+              Use arrows to maneuver spacecraft around the planets. When you hit planet directly, you crash. However, when you land
+              with feet first, you will land safely.
+              <br/>
+              Play this on desktop only.
+            </div>
+          </p>
+          <p>
+            <div class="label">What is this game about?</div>
+            <div class="description">
+              I don't really know. ¯\_(ツ)_/¯
+            </div>
+          </p>
+          <p>
+            <div class="label">What is Ludum Dare?</div>
+            <div class="description">Ludum Dare is a compo, where you try to make a game in 48 hours, this time with theme "every 10 seconds".</div>
+          </p>
+          <button id="startButton" autofocus>Start</button>
+        </div>
       </div>
       <div id="gameOverScreen" class="screen">
         <div class="screen-inner">
