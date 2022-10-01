@@ -1,5 +1,5 @@
 import Player from "../objects/player";
-import { Vec2 } from "../utils/vectors";
+import { Vec2, Vec4 } from "../utils/vectors";
 import Game from "./game";
 
 export default class Camera {
@@ -20,7 +20,6 @@ export default class Camera {
     if (this.focusedObject) {
       this.pos = this.focusedObject.getPos();
       this.zoomOut = Math.max(1, Math.sqrt(Math.abs(this.focusedObject.getAcceleration())) / 2);
-      console.log(this.focusedObject.getAcceleration());
     }
 
     if (this.zoomOutInterpolated < this.zoomOut) {
@@ -37,5 +36,21 @@ export default class Camera {
       -this.pos[1] / this.zoomOutInterpolated + (this.game.canvasHeight / 2) * 1
     );
     ctx.scale(scale, scale);
+  }
+
+  public getBoundingRect(): Vec4 {
+    const { canvasWidth, canvasHeight } = this.game;
+    const { zoomOutInterpolated, pos } = this;
+
+    const x = pos[0] - (canvasWidth / 2) * zoomOutInterpolated;
+    const y = pos[1] - (canvasHeight / 2) * zoomOutInterpolated;
+
+    return [x, y, x + canvasWidth * zoomOutInterpolated, y + canvasHeight * zoomOutInterpolated];
+  }
+
+  public getScreen(): Vec4 {
+    const boundingRect = this.getBoundingRect();
+
+    return [boundingRect[0], boundingRect[1], boundingRect[2] - boundingRect[0], boundingRect[3] - boundingRect[1]];
   }
 }

@@ -20,3 +20,7 @@ export function angleMovement(angle: number, a: number): Vec2 {
   const rads = toRads(angle);
   return [Math.sin(rads) * a, -Math.cos(rads) * a];
 }
+
+export function getDistance(a: Vec2, b: Vec2): number {
+  return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2));
+}

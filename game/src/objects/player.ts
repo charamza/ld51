@@ -31,30 +31,31 @@ export default class Player extends GameObject {
     const turnAccel = 5;
     const turnSpeedDecel = 1.02;
     const planetSafeLandingMaxAngle = 40;
+    const normalized = dt / 0.016;
 
     if (Input.isKeyDown("ArrowLeft")) {
-      this.rot -= turnAccel;
+      this.rot -= turnAccel * normalized;
       this.a /= turnSpeedDecel;
       this.emitRightParticles();
     }
     if (Input.isKeyDown("ArrowRight")) {
-      this.rot += turnAccel;
+      this.rot += turnAccel * normalized;
       this.a /= turnSpeedDecel;
       this.emitLeftParticles();
     }
     if (Input.isKeyDown("ArrowUp")) {
-      this.a += frontAccel;
+      this.a += frontAccel * normalized;
       this.emitBackParticles();
     } else if (Input.isKeyDown("ArrowDown")) {
       if (this.a > 0) {
-        this.a = this.a / 1.01 - backAccel;
+        this.a = this.a / (1.01 * normalized) - backAccel * normalized;
       } else {
-        this.a = this.a - backAccel;
+        this.a = this.a - backAccel * normalized;
       }
       this.emitFrontParticles();
     } else {
       if (this.a > 10) {
-        this.a = this.a / 1.004;
+        this.a = this.a / (1.004 * normalized);
       }
     }
 

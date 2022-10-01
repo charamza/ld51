@@ -29,4 +29,20 @@ export default class GUI {
     this.elGameOverScreen.classList.add("show");
     this.elGameOverBtn.focus();
   }
+
+  public renderEnteringInterstellarBack(ctx: CanvasRenderingContext2D): void {
+    const screen = this.game.camera.getScreen();
+    ctx.fillStyle = "rgba(255, 64, 64, 0.5)";
+    ctx.fillRect(...screen);
+  }
+
+  public renderEnteringInterstellarFront(ctx: CanvasRenderingContext2D): void {
+    const screen = this.game.camera.getScreen();
+    ctx.fillStyle = "white";
+    ctx.font = "bold 50px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Entering Interstellar Space", screen[0] + screen[2] / 2, screen[1] + screen[3] / 2 + 128);
+    ctx.font = "bold 30px Arial";
+    ctx.fillText("Please return back", screen[0] + screen[2] / 2, screen[1] + screen[3] / 2 + 192);
+  }
 }
