@@ -2,7 +2,7 @@ import World from "../game/world";
 import { angleMovement, clamp, getAnglesDiff, toRads } from "../utils/angles";
 import Input from "../utils/input";
 import { addVec2, subVec2, Vec2 } from "../utils/vectors";
-import GameObject from "./gameobject";
+import GameObject from "./gameObject";
 import Particle from "./particle";
 import Planet from "./planet";
 
@@ -42,14 +42,17 @@ export default class Player extends GameObject {
     if (Input.isKeyDown("ArrowUp")) {
       this.a += frontAccel;
       this.emitBackParticles();
-    }
-    if (Input.isKeyDown("ArrowDown")) {
+    } else if (Input.isKeyDown("ArrowDown")) {
       if (this.a > 0) {
         this.a = this.a / 1.01 - backAccel;
       } else {
         this.a = this.a - backAccel;
       }
       this.emitFrontParticles();
+    } else {
+      if (this.a > 10) {
+        this.a = this.a / 1.004;
+      }
     }
 
     let isColliding = false;

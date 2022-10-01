@@ -1,4 +1,4 @@
-import GameObject from "./gameobject";
+import GameObject from "./gameObject";
 
 export default class GameComponent {
   protected gameObject: GameObject;

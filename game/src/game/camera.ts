@@ -1,7 +1,6 @@
-import GameObject from "../objects/gameobject";
+import GameObject from "../objects/gameObject";
 import { Vec2 } from "../utils/vectors";
 import Game from "./game";
-import World from "./world";
 
 export default class Camera {
   protected pos: Vec2;

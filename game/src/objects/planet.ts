@@ -1,6 +1,6 @@
 import World from "../game/world";
 import { Vec2 } from "../utils/vectors";
-import GameObject from "./gameobject";
+import GameObject from "./gameObject";
 
 export default class Planet extends GameObject {
   protected color: string = "#ffffff";

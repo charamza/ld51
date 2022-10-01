@@ -1,4 +1,4 @@
-import GameObject from "../objects/gameobject";
+import GameObject from "../objects/gameObject";
 import Particle from "../objects/particle";
 import Planet from "../objects/planet";
 import Player from "../objects/player";
