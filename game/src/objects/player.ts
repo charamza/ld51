@@ -189,4 +189,8 @@ export default class Player extends GameObject {
       );
     }
   }
+
+  public getAcceleration(): number {
+    return this.a;
+  }
 }

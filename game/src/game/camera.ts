@@ -1,12 +1,13 @@
-import GameObject from "../objects/gameObject";
+import Player from "../objects/player";
 import { Vec2 } from "../utils/vectors";
 import Game from "./game";
 
 export default class Camera {
   protected pos: Vec2;
-  protected focusedObject: GameObject | null = null;
+  protected focusedObject: Player | null = null;
+  protected zoomOut: number = 1;
 
-  public focusObject(obj: GameObject) {
+  public focusObject(obj: Player) {
     this.focusedObject = obj;
   }
 
@@ -17,10 +18,17 @@ export default class Camera {
   public update(dt: number): void {
     if (this.focusedObject) {
       this.pos = this.focusedObject.getPos();
+      this.zoomOut = Math.max(1, Math.sqrt(Math.abs(this.focusedObject.getAcceleration())) / 2);
+      console.log(this.focusedObject.getAcceleration());
     }
   }
 
   public translateContext(ctx: CanvasRenderingContext2D): void {
-    ctx.translate(-this.pos[0] + this.game.canvasWidth / 2, -this.pos[1] + this.game.canvasHeight / 2);
+    const scale = 1 / this.zoomOut;
+    ctx.translate(
+      -this.pos[0] / this.zoomOut + (this.game.canvasWidth / 2) * 1,
+      -this.pos[1] / this.zoomOut + (this.game.canvasHeight / 2) * 1
+    );
+    ctx.scale(scale, scale);
   }
 }

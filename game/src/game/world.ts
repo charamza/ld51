@@ -10,7 +10,7 @@ export default class World {
 
   constructor(public game: Game) {}
 
-  public create(): GameObject {
+  public create(): Player {
     this.objects = [];
     this.particles = [];
 
