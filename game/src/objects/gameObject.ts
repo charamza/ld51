@@ -1,16 +1,13 @@
 import World from "../game/world";
 import { addVec2, Vec2, Vec4 } from "../utils/vectors";
-import GameComponent from "./gameComponent";
 
 export default class GameObject {
-  protected world: World;
+  public world: World;
 
   protected pos: Vec2;
   protected size: Vec2;
   protected rot: number;
   protected _delete: boolean = false;
-
-  protected components: GameComponent[] = [];
 
   constructor(world: World, props: { pos: Vec2; size: Vec2 }) {
     this.world = world;
@@ -43,13 +40,9 @@ export default class GameObject {
     this.rot = rot;
   }
 
-  public update(dt: number): void {
-    this.components.forEach((component) => component.update(dt));
-  }
+  public update(dt: number): void {}
 
-  public render(ctx: CanvasRenderingContext2D): void {
-    this.components.forEach((component) => component.render(ctx));
-  }
+  public render(ctx: CanvasRenderingContext2D): void {}
 
   public getDistanceTo(other: GameObject): number {
     const [x1, y1] = this.pos;

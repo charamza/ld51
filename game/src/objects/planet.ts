@@ -2,6 +2,10 @@ import World from "../game/world";
 import { toRads } from "../utils/angles";
 import { Vec2 } from "../utils/vectors";
 import GameObject from "./gameObject";
+import House from "./house";
+import Human from "./human";
+import PlanetObject from "./planetObject";
+import Tree from "./tree";
 
 type ColorSpot = {
   pos: Vec2;
@@ -23,6 +27,8 @@ export default class Planet extends GameObject {
 
   protected colorSpots: ColorSpot[] = [];
 
+  protected objects: PlanetObject[] = [];
+
   constructor(world: World, { size, ...props }: { pos: Vec2; size: number }) {
     super(world, { ...props, size: [size, size] });
 
@@ -43,12 +49,35 @@ export default class Planet extends GameObject {
     }
 
     this._toBeDestroyed = Math.random() < 0.1;
+
+    this.createResidents();
+  }
+
+  public createResidents(): void {
+    const scalar = Math.floor(this.size[0] / 400);
+    const numTrees = Math.floor(Math.random() * 10 + 10) * scalar;
+    const numHouses = Math.floor(Math.random() * 5 + 5) * scalar;
+    const numResidents = Math.floor(Math.random() * 10 + 10) * scalar;
+
+    for (let i = 0; i < 40; i++) {
+      this.objects.push(new Tree(this));
+    }
+
+    for (let i = 0; i < 10; i++) {
+      this.objects.push(new House(this));
+    }
+
+    for (let i = 0; i < numResidents; i++) {
+      this.objects.push(new Human(this));
+    }
   }
 
   public update(dt: number): void {
     super.update(dt);
 
     this.rot += this.rotSpeed * dt;
+
+    this.objects.forEach((obj) => obj.update(dt));
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
@@ -79,6 +108,8 @@ export default class Planet extends GameObject {
     }
 
     ctx.restore();
+
+    this.objects.forEach((obj) => obj.render(ctx));
   }
 
   public moveWithPlanet(gameObj: GameObject, dt: number): void {
@@ -95,5 +126,9 @@ export default class Planet extends GameObject {
 
   public willGetDestroyed(): boolean {
     return this._toBeDestroyed;
+  }
+
+  public getRotSpeed(): number {
+    return this.rotSpeed;
   }
 }
