@@ -19,6 +19,7 @@ const colorSchemas = [
 export default class Planet extends GameObject {
   protected color: string = "#ffffff";
   protected rotSpeed: number;
+  protected _toBeDestroyed: boolean = false;
 
   protected colorSpots: ColorSpot[] = [];
 
@@ -40,6 +41,8 @@ export default class Planet extends GameObject {
         size: randomSize,
       });
     }
+
+    this._toBeDestroyed = Math.random() < 0.1;
   }
 
   public update(dt: number): void {
@@ -88,5 +91,9 @@ export default class Planet extends GameObject {
     const rads2 = toRads(angleToObj + rotSpeed * dt);
     gameObj.movePos([(Math.sin(rads2) - Math.sin(rads1)) * radius, -(Math.cos(rads2) - Math.cos(rads1)) * radius]);
     gameObj.setRot(angleToObj);
+  }
+
+  public willGetDestroyed(): boolean {
+    return this._toBeDestroyed;
   }
 }

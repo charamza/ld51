@@ -9,7 +9,7 @@ import Game from "./game";
 export default class World {
   private objects: GameObject[] = [];
   private particles: Particle[] = [];
-  private mapRadius: number = 0;
+  public mapRadius: number = 0;
 
   constructor(public game: Game) {}
 
@@ -97,7 +97,8 @@ export default class World {
     if (object instanceof Particle) this.particles.push(object);
   }
 
-  public getObjects<T extends GameObject>(typeT: new (...params: unknown[]) => T): T[] {
+  public getObjects<T extends GameObject = GameObject>(typeT?: new (...params: unknown[]) => T): T[] {
+    if (!typeT) return this.objects as T[];
     return this.objects.filter((object) => object instanceof typeT) as T[];
   }
 

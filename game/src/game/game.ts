@@ -78,6 +78,8 @@ export default class Game {
     this.camera.translateContext(this.ctx);
     this.world.render(this.ctx);
     this.ctx.restore();
+
+    this.gui.render(this.ctx);
   }
 
   public start(): void {
