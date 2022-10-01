@@ -5,10 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LD51</title>
-    <link rel="stylesheet" href="public/style.css" />
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
+    <canvas id="game">Your browser doesn't support canvas.</canvas>
     <div id="app"></div>
+    <div id="screens">
+      <div id="startScreen" class="screen">
+        <h1>LD51</h1>
+        <button id="startButton">Start</button>
+      </div>
+      <div id="gameOverScreen" class="screen">
+        <div class="screen-inner">
+          <h1>Game Over</h1>
+          <button id="restartButton">Restart</button>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

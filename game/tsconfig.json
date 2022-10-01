@@ -15,7 +15,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "incremental": true
   },
   "include": ["src"]
 }

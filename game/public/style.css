@@ -1,3 +1,67 @@
 body {
   background-color: black;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+#game {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.screen {
+  display: none;
+  position: absolute;
+  inset: 0;
+}
+
+.screen.show {
+  display: block;
+}
+
+.screen.show .screen-inner {
+  animation: screen-in 0.5s ease-in-out;
+}
+
+.screen-inner {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+  margin-top: 0;
+}
+
+button {
+  display: block;
+  margin: 10px auto 0;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 5px;
+  background: #000;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+@keyframes screen-in {
+  from {
+    transform: translate(-50%, 50%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
 }
