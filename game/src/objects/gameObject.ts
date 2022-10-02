@@ -8,6 +8,7 @@ export default class GameObject {
   protected size: Vec2;
   protected rot: number;
   protected _delete: boolean = false;
+  protected _isVisible: boolean = false;
 
   constructor(world: World, props: { pos: Vec2; size: Vec2 }) {
     this.world = world;
@@ -64,5 +65,13 @@ export default class GameObject {
 
   public toBeDeleted(): boolean {
     return this._delete;
+  }
+
+  public setVisible(visible: boolean): void {
+    this._isVisible = visible;
+  }
+
+  public isVisible(): boolean {
+    return this._isVisible;
   }
 }

@@ -1,6 +1,7 @@
 import Planet from "../objects/planet";
 import Player from "../objects/player";
 import { FONT_NAME } from "../utils/consts";
+import { GraphicsLevel } from "../utils/settings";
 import { Vec2 } from "../utils/vectors";
 import Game from "./game";
 
@@ -9,10 +10,15 @@ export default class GUI {
   private elGameOverBtn: HTMLElement = document.getElementById("restartButton");
   private elStartScreen: HTMLElement = document.getElementById("startScreen");
   private elStartBtn: HTMLElement = document.getElementById("startButton");
+  private elSettingButtons: NodeListOf<HTMLButtonElement> = document.querySelectorAll("#graphics-levels button");
+  private elBtnShowGifs: HTMLInputElement = document.getElementById("show-gifs") as HTMLInputElement;
+  private elGifWrapper: HTMLElement = document.getElementById("gif");
+  private elGifImg: HTMLElement = document.querySelector("#gif img");
 
   constructor(protected game: Game) {
     this.initGameStartScreen();
     this.initGameOverScreen();
+    this.selectGraphicsButton(this.game.settings.graphicsLevel, true);
   }
 
   private initGameStartScreen(): void {
@@ -21,6 +27,23 @@ export default class GUI {
       this.elStartScreen.classList.remove("show");
     });
     setTimeout(() => this.elStartBtn.focus(), 100);
+
+    this.elSettingButtons.forEach((el) => {
+      el.addEventListener("click", () => {
+        const level = el.getAttribute("data-value") as "low" | "medium" | "high";
+        this.selectGraphicsButton(level);
+      });
+    });
+  }
+
+  private selectGraphicsButton(level: GraphicsLevel, isInitial: boolean = false): void {
+    const el = document.querySelector(`#graphics-levels button[data-value="${level}"]`);
+    this.elSettingButtons.forEach((el) => el.classList.remove("active"));
+    el.classList.add("active");
+
+    if (!isInitial) {
+      this.game.settings.changeGraphicsLevel(level);
+    }
   }
 
   private initGameOverScreen(): void {
@@ -51,6 +74,20 @@ export default class GUI {
     }
 
     document.querySelector("#gameOverScreen .description").innerHTML = text;
+
+    this.elGifWrapper.style.display = this.elBtnShowGifs.checked ? "block" : "none";
+    let gifImage = "airplane-nervous";
+    if (this.game.score.rescuedPeople > 0) gifImage = "tried";
+    if (this.game.score.rescuedPeople >= 20) gifImage = "dancing";
+    if (this.game.score.rescuedPeople >= 50) gifImage = "wow";
+    if (this.game.score.rescuedPeople >= 100) gifImage = "goodjob";
+    if (this.game.score.rescuedPeople >= 200) gifImage = "phenomenal";
+    if (this.game.score.rescuedPeople >= 500) gifImage = "master";
+    if (this.game.score.rescuedPeople < this.game.score.killedPeople) gifImage = "wreck-it";
+    if (this.game.score.rescuedPeople === this.game.score.killedPeople) gifImage = "balance";
+    if (this.game.score.rescuedPeople === 0) gifImage = "airplane-nervous";
+
+    this.elGifImg.setAttribute("src", `/gifs/${gifImage}.gif`);
   }
 
   public render(ctx: CanvasRenderingContext2D): void {

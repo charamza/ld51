@@ -73,6 +73,27 @@ button {
   font-size: 12px;
 }
 
+#graphics-levels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+#graphics-levels button {
+  flex: 1 1 auto;
+}
+
+#graphics-levels button.active {
+  background: #f00;
+}
+
+#gif img {
+  max-height: 240px;
+  margin: 0 auto 32px;
+  display: block;
+}
+
 @keyframes screen-in {
   from {
     transform: translate(-50%, 0%);

@@ -12,7 +12,7 @@ wsServer.on("connection", (socket) => {
   socket.on("message", (message) => socket.send(message));
 });
 
-app.use(cors("*"));
+app.use(cors());
 
 app.get(["/", "/:name"], (req, res) => {
   const greeting = `Hello from ${process.env.VITE_BACKEND_SECURE === "true" ? "production" : "local"} node on Fly!!!`;

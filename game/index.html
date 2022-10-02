@@ -54,6 +54,18 @@
             <div class="label">Who made this?</div>
             <div class="description">Made with <span style="color: red">❤️</span> in Czech by Honza Charamza.</div>
           </p>
+          <p>
+            <div class="label">Graphics level</div>
+            <div id="graphics-levels">
+              <button data-value="low">Low</button>
+              <button data-value="medium">Medium</button>
+              <button data-value="high">High</button>
+            </div>
+            <label style="margin-top: 8px; display: block">
+              <input type="checkbox" id="show-gifs" checked />
+              Show gifs
+            </label>
+          </p>
           <button id="startButton" autofocus>Start</button>
           <div class="warning">Warning: Contains flashy images</div>
         </div>
@@ -62,6 +74,9 @@
         <div class="screen-inner">
           <h1>Game Over</h1>
           <p>
+            <div id="gif">
+              <img src="/gifs/airplane-nervous.gif" />
+            </div>
             <div class="label">Your score</div>
             <div class="description"></div>
           </p>

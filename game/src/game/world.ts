@@ -17,7 +17,7 @@ export default class World {
   private particles: Particle[] = [];
   public mapRadius: number = 8000;
 
-  private cycle: number = 0;
+  private cycle: number = this.getCycle();
 
   constructor(public game: Game) {}
 
@@ -25,12 +25,12 @@ export default class World {
     this.objects = [];
     this.particles = [];
 
-    // const testPlanet = new Planet(this, {
-    //   pos: [0, 700],
-    //   size: 800,
-    // });
-    // testPlanet.startEmerging();
-    // this.objects.push(testPlanet);
+    const testPlanet = new Planet(this, {
+      pos: [0, 700],
+      size: 800,
+    });
+    testPlanet.startEmerging();
+    this.objects.push(testPlanet);
 
     console.log("Using radius", this.mapRadius);
 
@@ -40,7 +40,6 @@ export default class World {
       if (planet) {
         planet.createResidents();
         planets.push(planet);
-        this.objects.push(planet);
       }
     }
 
@@ -71,19 +70,23 @@ export default class World {
   }
 
   public update(dt: number): void {
-    this.objects.forEach((object) => object.update(dt));
+    const cameraBoundingRect = this.game.camera.getBoundingRect();
+    this.objects.forEach((object) => {
+      object.update(dt);
+      const isVisible = aabb(object.getBoundingBox(), cameraBoundingRect);
+      object.setVisible(isVisible);
+    });
     this.particles.forEach((particle) => particle.update(dt));
 
     this.objects = this.objects.filter((object) => !object.toBeDeleted());
     this.particles = this.particles.filter((particle) => !particle.isDead());
 
-    const cycleEachMs = 14 * 1000;
-    const actualCycle = Math.floor(Date.now() / cycleEachMs);
+    const actualCycle = this.getCycle();
     if (actualCycle !== this.cycle) {
       this.cycle = actualCycle;
       const planets = this.getObjects(Planet);
 
-      if (planets.length > 0 && this.game.playing) {
+      if (planets.length > 0) {
         const planet = planets[Math.floor(Math.random() * planets.length)];
         planet.startDoomsday();
 
@@ -103,8 +106,7 @@ export default class World {
     }
 
     this.renderBorder(ctx);
-    const cameraBoundingRect = this.game.camera.getBoundingRect();
-    this.objects.filter((obj) => aabb(obj.getBoundingBox(), cameraBoundingRect)).forEach((object) => object.render(ctx));
+    this.objects.filter((obj) => obj.isVisible()).forEach((object) => object.render(ctx));
     this.particles.forEach((particle) => particle.render(ctx));
 
     if (isPlayerInterstellar) {
@@ -159,5 +161,10 @@ export default class World {
 
     if (!planet) console.log("Couldn't place planet");
     return planet;
+  }
+
+  private getCycle(): number {
+    const cycleEachMs = 14 * 1000;
+    return Math.floor(Date.now() / cycleEachMs);
   }
 }

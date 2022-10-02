@@ -3,7 +3,7 @@ import ExplosionParticle from "../particles/explosionParticle";
 import ImplosionParticle from "../particles/ImplosionParticle";
 import { angleMovement, toRads } from "../utils/angles";
 import { hexColorToRgb } from "../utils/colors";
-import { addVec2, lerp, Vec2, Vec3 } from "../utils/vectors";
+import { lerp, Vec2, Vec3 } from "../utils/vectors";
 import GameObject from "./gameObject";
 import House from "./house";
 import Human from "./human";
@@ -79,10 +79,10 @@ export default class Planet extends GameObject {
   }
 
   public createResidents(emerging: boolean = false): void {
-    const scalar = Math.round(this.size[0] / 400);
-    const numTrees = Math.floor(Math.random() * 3 + 3) * scalar;
-    const numHouses = Math.floor(Math.random() * 5 + 5) * scalar;
-    const numResidents = Math.floor(Math.random() * 10 + 10) * scalar;
+    const scalar = this.size[0] / 4000;
+    const numTrees = Math.floor((Math.random() * 10 + 10) * scalar * this.world.game.settings.graphicsMultiplier);
+    const numHouses = Math.floor((Math.random() * 5 + 5) * scalar * this.world.game.settings.graphicsMultiplier);
+    const numResidents = Math.floor((Math.random() * 100 + 100) * scalar);
 
     const createObject = (creator: () => PlanetObject) => {
       const create = () => {
@@ -114,8 +114,6 @@ export default class Planet extends GameObject {
   public update(dt: number): void {
     super.update(dt);
 
-    this.rot += this.rotSpeed * dt;
-
     if (this._doomsdayEnd !== null && Date.now() > this._doomsdayEnd + DoomsdayLatencyInMillis) {
       this.destroyPlanet();
     }
@@ -127,22 +125,32 @@ export default class Planet extends GameObject {
       }
     }
 
-    this.objects.forEach((obj) => obj.update(dt));
-    this.objects = this.objects.filter((obj) => !obj.toBeDeleted());
+    this.rot += this.rotSpeed * dt;
+
+    if (this.isVisible()) {
+      this.objects.forEach((obj) => obj.update(dt));
+      this.objects = this.objects.filter((obj) => !obj.toBeDeleted());
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
     super.render(ctx);
 
-    if (this.isEmerging()) {
+    const emergingProgress = this.getEmergingProgress();
+
+    if (emergingProgress < 1) {
       this.renderEmerging(ctx);
-    } else {
-      this.renderPlanet(ctx);
 
-      this.objects.forEach((obj) => obj.render(ctx));
-
-      this.renderDoomsday(ctx);
+      ctx.globalAlpha = Math.max((emergingProgress - 0.75) * 4, 0);
     }
+
+    this.renderPlanet(ctx);
+
+    this.objects.forEach((obj) => obj.render(ctx));
+
+    this.renderDoomsday(ctx);
+
+    ctx.globalAlpha = 1;
   }
 
   private renderPlanet(ctx: CanvasRenderingContext2D): void {
@@ -155,29 +163,37 @@ export default class Planet extends GameObject {
     ctx.rotate(toRads(this.rot));
 
     ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    ctx.clip();
+    const graphicsLevel = this.world.game.settings.graphicsLevel;
+
+    if (graphicsLevel !== "low") {
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.clip();
+    }
 
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
     ctx.fill();
 
-    for (const spot of this.colorSpots) {
-      ctx.fillStyle = spot.color;
-      ctx.beginPath();
-      ctx.arc(spot.pos[0], spot.pos[1], spot.size, 0, Math.PI * 2);
-      ctx.fill();
+    if (graphicsLevel !== "low") {
+      for (const spot of this.colorSpots) {
+        ctx.fillStyle = spot.color;
+        ctx.beginPath();
+        ctx.arc(spot.pos[0], spot.pos[1], spot.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
-    const gradient = ctx.createRadialGradient(0, 0, radius / 2, 0, 0, radius);
+    if (graphicsLevel === "high") {
+      const gradient = ctx.createRadialGradient(0, 0, radius / 2, 0, 0, radius);
 
-    gradient.addColorStop(0, "transparent");
-    gradient.addColorStop(0.9, "rgba(0,0,0,0.3)");
-    gradient.addColorStop(1, "rgba(0,0,0,0.2)");
+      gradient.addColorStop(0, "transparent");
+      gradient.addColorStop(0.9, "rgba(0,0,0,0.3)");
+      gradient.addColorStop(1, "rgba(0,0,0,0.2)");
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+    }
 
     ctx.restore();
   }
@@ -239,7 +255,7 @@ export default class Planet extends GameObject {
     const radius = size[0] / 2 + gameObj.getSize()[1] / 2;
 
     const angleToObj = this.getAngleTo(gameObj);
-    const newAngle = angleToObj + rotSpeed * dt * 2;
+    const newAngle = angleToObj + rotSpeed * dt;
 
     const rads1 = toRads(angleToObj);
     const rads2 = toRads(newAngle);
@@ -314,12 +330,14 @@ export default class Planet extends GameObject {
     const player = this.world.player;
     if (player) {
       const dist = this.getDistanceTo(player);
-      if (dist < 24) {
+      const treshold = this.getSize()[0] / 20;
+      if (dist < treshold) {
         player.die();
       }
     }
 
-    for (let i = 0; i < 1000; i++) {
+    const multiplier = this.world.game.settings.graphicsMultiplier;
+    for (let i = 0; i < 100 * multiplier; i++) {
       const size = Math.random() * 10 + 5;
 
       this.world.add(new ExplosionParticle(this.world, this.pos, [size, size], this.size[0] / 2, 10 + Math.random() * 100));

@@ -1,4 +1,5 @@
 import { FONT_NAME } from "../utils/consts";
+import Settings from "../utils/settings";
 import Camera from "./camera";
 import GUI from "./gui";
 import Score from "./score";
@@ -15,11 +16,14 @@ export default class Game {
   public camera: Camera;
   public gui: GUI;
   public score: Score;
+  public settings: Settings;
 
   public playing: boolean = false;
   public paused: boolean = false;
+  public hasAlreadyPlayed: boolean = false;
 
   constructor() {
+    this.settings = new Settings(this);
     this.canvas = document.getElementById("game") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
@@ -90,14 +94,17 @@ export default class Game {
     this.camera.focusObject(player);
     this.paused = false;
     this.playing = true;
+    this.hasAlreadyPlayed = true;
     this.score.reset();
   }
 
   public restart(): void {
     this.world.create();
-    const player = this.world.createPlayer();
-    this.camera.focusObject(player);
-    this.playing = true;
+    if (this.hasAlreadyPlayed) {
+      const player = this.world.createPlayer();
+      this.camera.focusObject(player);
+      this.playing = true;
+    }
     this.score.reset();
   }
 

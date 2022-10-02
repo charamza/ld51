@@ -1,4 +1,5 @@
-import { Vec2 } from "../utils/vectors";
+import { angleMovement } from "../utils/angles";
+import { addVec2, Vec2 } from "../utils/vectors";
 import Planet from "./planet";
 import PlanetObject from "./planetObject";
 
@@ -18,8 +19,11 @@ export default class Tree extends PlanetObject {
 
     const leafCount = 4;
     for (let i = 0; i < leafCount; i++) {
+      const angle = (360 / leafCount) * i;
+      const offset = angleMovement(angle, Math.random() * 6);
+
       this.leaves.push({
-        pos: [Math.random() * 8 - 4, Math.random() * 8 + 12],
+        pos: addVec2([0, 18], offset),
         color: Math.floor(Math.random() * LeafColors.length),
         size: Math.random() * 4 + 4,
       });
