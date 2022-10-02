@@ -40,8 +40,7 @@ export default class Particle {
   }
 
   public update(dt: number): void {
-    const { pos, size } = this;
-    const { rot, a, scale, opacity, decayIn, decayStart } = this;
+    const { pos, size, rot, a, scale, opacity, decayIn, decayStart } = this;
 
     const rads = (rot / 180) * Math.PI;
     this.pos = [pos[0] + Math.sin(rads) * a * dt, pos[1] - Math.cos(rads) * a * dt];
@@ -51,8 +50,7 @@ export default class Particle {
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
-    const { pos, size } = this;
-    const { rot, a, scale, opacity, color } = this;
+    const { pos, size, rot, a, scale, opacity, color } = this;
 
     ctx.globalAlpha = opacity;
     ctx.fillStyle = color;

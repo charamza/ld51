@@ -38,7 +38,7 @@ export default class World {
 
     const planets: Planet[] = [];
     const planetsCount = 20;
-    const emptySpacePercentage = 0.8;
+    const emptySpacePercentage = 0.2;
     const planetMinRadius = 200;
     const planetMaxRadius = 1200;
 
@@ -56,6 +56,8 @@ export default class World {
     for (let i = 0; i < planetsCount; i++) {
       let planet: Planet;
 
+      const minDistanceBetweenPlanets = 200;
+
       for (let j = 0; j < 100; j++) {
         const angle = Math.random() * Math.PI * 2;
         const distance = Math.random() * radius + 1000;
@@ -65,7 +67,7 @@ export default class World {
           size: sizes[i],
         });
 
-        const collidesWith = planets.find((otherPlanet) => otherPlanet.getDistanceTo(planet) < 100);
+        const collidesWith = planets.find((otherPlanet) => otherPlanet.getDistanceTo(planet) < minDistanceBetweenPlanets);
         if (!collidesWith) break;
 
         planet = null;
@@ -81,7 +83,7 @@ export default class World {
     this.objects.push(...planets);
 
     const player = new Player(this, {
-      pos: [300, 300],
+      pos: [0, 0],
     });
 
     this.objects.push(player);

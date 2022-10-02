@@ -1,5 +1,6 @@
 import Camera from "./camera";
 import GUI from "./gui";
+import Score from "./score";
 import World from "./world";
 
 export default class Game {
@@ -12,8 +13,10 @@ export default class Game {
   public world: World;
   public camera: Camera;
   public gui: GUI;
+  public score: Score;
 
-  public paused: boolean;
+  public playing: boolean = false;
+  public paused: boolean = false;
 
   constructor() {
     this.canvas = document.getElementById("game") as HTMLCanvasElement;
@@ -26,11 +29,13 @@ export default class Game {
     const player = this.world.create();
 
     this.camera = new Camera(this);
-    this.camera.focusObject(player);
+    // this.camera.focusObject(player);
     this.camera.update(0);
 
     this.gui = new GUI(this);
-    this.paused = true;
+    // this.paused = true;
+
+    this.score = new Score();
   }
 
   private onWindowResize(): void {
@@ -83,11 +88,23 @@ export default class Game {
   }
 
   public start(): void {
+    this.camera.focusObject(this.world.player);
     this.paused = false;
+    this.playing = true;
+    this.score.reset();
   }
 
   public restart(): void {
     const player = this.world.create();
     this.camera.focusObject(player);
+    this.playing = true;
+    this.score.reset();
+  }
+
+  public gameOver(): void {
+    this.playing = false;
+    this.camera.focusObject(null);
+    this.camera.setZoomOut(3);
+    this.gui.showGameOverScreen();
   }
 }

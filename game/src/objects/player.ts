@@ -66,7 +66,7 @@ export default class Player extends GameObject {
     if (closestPlanet) {
       const planetAngle = this.getAngleTo(closestPlanet);
       const planetDistance = closestPlanet.getDistanceTo(this);
-      const planetInfluence = 1 - clamp(planetDistance / 500, 0.1, 1); // 0.0 - 0.9
+      const planetInfluence = 1 - clamp(planetDistance / 500, 0.2, 1); // 0.0 - 0.8
       const planetWeight = 6; //closestPlanet.getSize()[0] / 60;
 
       const planetAngleDiff = getAnglesDiff(this.rot, planetAngle);
@@ -92,11 +92,14 @@ export default class Player extends GameObject {
         if (Math.abs(angleDiff) < planetSafeLandingMaxAngle) {
           closestPlanet.moveWithPlanet(this, dt);
           this.pos = addVec2(this.pos, angleMovement(this.rot, -(dist + 0.001)));
+          closestPlanet.setPlayerOnPlanet(this);
         } else {
           this.emitCrashParticles();
           this.delete();
-          this.world.game.gui.showGameOverScreen();
+          this.world.game.gameOver();
         }
+      } else {
+        closestPlanet.setPlayerOnPlanet(null);
       }
     }
 

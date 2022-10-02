@@ -1,3 +1,5 @@
+import { getAnglesDiff } from "../utils/angles";
+import Particle from "./particle";
 import Planet from "./planet";
 import PlanetObject from "./planetObject";
 
@@ -20,7 +22,29 @@ export default class Human extends PlanetObject {
   }
 
   public update(dt: number): void {
-    this.rot += this.dx * dt;
+    const playerOnPlanet = this.planet.getPlayerOnPlanet();
+    const runningSpeed = Math.abs(this.dx) * 15;
+    if (playerOnPlanet) {
+      const diff = getAnglesDiff(this.rot, playerOnPlanet);
+      if (diff > 0) {
+        this.rot -= runningSpeed * dt;
+        const newDiff = getAnglesDiff(this.rot, playerOnPlanet);
+        if (newDiff < 0) {
+          this.rot = playerOnPlanet;
+          this.planet.setHumanReadyForPickup(this);
+        }
+      } else {
+        this.rot += runningSpeed * dt;
+        const newDiff = getAnglesDiff(this.rot, playerOnPlanet);
+        if (newDiff > 0) {
+          this.rot = playerOnPlanet;
+          this.planet.setHumanReadyForPickup(this);
+        }
+      }
+    } else {
+      this.rot += this.dx * dt;
+    }
+
     super.update(dt);
   }
 
@@ -50,5 +74,25 @@ export default class Human extends PlanetObject {
       ctx.fillRect(-handSize[0] / 2, this.size[0] / 2, handSize[0], handSize[1]);
       ctx.restore();
     });
+  }
+
+  public kill(): void {
+    this.delete();
+    this.world.game.score.killedPeople++;
+
+    for (let i = 0; i < 20; i++) {
+      this.world.add(
+        new Particle(this.world, {
+          pos: [this.pos[0], this.pos[1]],
+          size: [2, 2],
+          rot: this.rot + Math.random() * 135 - 62.5,
+          a: 8 + Math.random() * 24,
+          scale: 1,
+          opacity: 1,
+          decayIn: 2 + Math.random() * 2,
+          color: "red",
+        })
+      );
+    }
   }
 }

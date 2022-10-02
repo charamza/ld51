@@ -31,11 +31,30 @@ export default class GUI {
   public showGameOverScreen(): void {
     this.elGameOverScreen.classList.add("show");
     this.elGameOverBtn.focus();
+
+    let text = "Try to rescue people by safely landing on planets with backward movement.";
+
+    if (this.game.score.rescuedPeople > 0 || this.game.score.killedPeople > 0) {
+      text = "You ";
+
+      if (this.game.score.rescuedPeople > 0) {
+        text += "rescued " + this.game.score.rescuedPeople + " people";
+        if (this.game.score.killedPeople > 0) text += " and ";
+      }
+      if (this.game.score.killedPeople > 0) {
+        text += "killed " + this.game.score.killedPeople + " people";
+      }
+
+      text += ".";
+    }
+
+    document.querySelector("#gameOverScreen .description").innerHTML = text;
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
-    if (!this.game.paused) {
+    if (this.game.playing) {
       this.renderMinimap(ctx);
+      this.renderScore(ctx);
     }
   }
 
@@ -84,15 +103,37 @@ export default class GUI {
     objs.forEach((obj) => {
       const pos = posToMinimapPos(obj.getPos());
 
-      let color = "white";
+      let color;
       if (obj instanceof Player) color = "#008cff";
-      if (obj instanceof Planet && obj.willGetDestroyed()) color = "#d6001d";
+      else if (obj instanceof Planet) {
+        if (obj.willGetDestroyed()) color = "#d6001d";
+        else color = "white";
+      } else {
+        // Only render planets and player
+        return;
+      }
 
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(x + width / 2 + (pos[0] * width) / 2, y + height / 2 + (pos[1] * height) / 2, 3, 0, 2 * Math.PI);
       ctx.fill();
     });
+
+    ctx.restore();
+  }
+
+  private renderScore(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 18px Arial";
+    ctx.textAlign = "right";
+    ctx.fillText("Rescued people:  ".toUpperCase() + this.game.score.rescuedPeople, this.game.canvasWidth - 14, 50 + 200);
+
+    if (this.game.score.killedPeople > 0) {
+      ctx.fillStyle = "white";
+      ctx.fillText("Killed people:  ".toUpperCase() + this.game.score.killedPeople, this.game.canvasWidth - 14, 50 + 200 + 30);
+    }
 
     ctx.restore();
   }

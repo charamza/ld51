@@ -5,6 +5,7 @@ import GameObject from "./gameObject";
 import House from "./house";
 import Human from "./human";
 import PlanetObject from "./planetObject";
+import Player from "./player";
 import Tree from "./tree";
 
 type ColorSpot = {
@@ -24,6 +25,7 @@ export default class Planet extends GameObject {
   protected color: string = "#ffffff";
   protected rotSpeed: number;
   protected _toBeDestroyed: boolean = false;
+  protected _playerOnPlanet: number | null = null;
 
   protected colorSpots: ColorSpot[] = [];
 
@@ -59,17 +61,19 @@ export default class Planet extends GameObject {
     const numHouses = Math.floor(Math.random() * 5 + 5) * scalar;
     const numResidents = Math.floor(Math.random() * 10 + 10) * scalar;
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < numTrees; i++) {
       this.objects.push(new Tree(this));
     }
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < numHouses; i++) {
       this.objects.push(new House(this));
     }
 
     for (let i = 0; i < numResidents; i++) {
       this.objects.push(new Human(this));
     }
+
+    this.objects.forEach((obj) => obj.update(0));
   }
 
   public update(dt: number): void {
@@ -78,6 +82,7 @@ export default class Planet extends GameObject {
     this.rot += this.rotSpeed * dt;
 
     this.objects.forEach((obj) => obj.update(dt));
+    this.objects = this.objects.filter((obj) => !obj.toBeDeleted());
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
@@ -124,11 +129,39 @@ export default class Planet extends GameObject {
     gameObj.setRot(angleToObj);
   }
 
+  public getObjects<T extends PlanetObject = PlanetObject>(typeT?: new (...params: unknown[]) => T): T[] {
+    if (!typeT) return this.objects as T[];
+    return this.objects.filter((object) => object instanceof typeT) as T[];
+  }
+
   public willGetDestroyed(): boolean {
     return this._toBeDestroyed;
   }
 
   public getRotSpeed(): number {
     return this.rotSpeed;
+  }
+
+  public setPlayerOnPlanet(player: Player | null): void {
+    const wasPlayerOnPlanet = this._playerOnPlanet !== null;
+    this._playerOnPlanet = player?.getRot() ?? null;
+
+    if (player && !wasPlayerOnPlanet) {
+      const humans = this.getObjects(Human);
+      humans.forEach((human) => {
+        const dist = human.getDistanceTo(player);
+        if (dist > 16) return;
+        human.kill();
+      });
+    }
+  }
+
+  public getPlayerOnPlanet(): number | null {
+    return this._playerOnPlanet;
+  }
+
+  public setHumanReadyForPickup(human: Human): void {
+    human.delete();
+    this.world.game.score.rescuedPeople++;
   }
 }

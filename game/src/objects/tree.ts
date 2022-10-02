@@ -16,10 +16,10 @@ export default class Tree extends PlanetObject {
   constructor(planet: Planet) {
     super(planet, { size: [4, 24] });
 
-    const leafCount = Math.floor(Math.random() * 5) + 5;
+    const leafCount = 4;
     for (let i = 0; i < leafCount; i++) {
       this.leaves.push({
-        pos: [Math.random() * 12 - 6, Math.random() * 4 + 16],
+        pos: [Math.random() * 8 - 4, Math.random() * 8 + 12],
         color: Math.floor(Math.random() * LeafColors.length),
         size: Math.random() * 4 + 4,
       });

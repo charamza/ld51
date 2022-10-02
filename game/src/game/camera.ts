@@ -53,4 +53,8 @@ export default class Camera {
 
     return [boundingRect[0], boundingRect[1], boundingRect[2] - boundingRect[0], boundingRect[3] - boundingRect[1]];
   }
+
+  public setZoomOut(zoomOut: number): void {
+    this.zoomOut = zoomOut;
+  }
 }
