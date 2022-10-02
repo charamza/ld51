@@ -97,6 +97,26 @@ button {
   display: block;
 }
 
+#btn-fullscreen {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  background: #fff;
+}
+
+#btn-fullscreen:hover {
+  background: #aaa;
+}
+
+#btn-fullscreen img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
 @keyframes screen-in {
   from {
     transform: translate(0, 50%);

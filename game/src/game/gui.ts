@@ -87,7 +87,7 @@ export default class GUI {
     if (this.game.score.rescuedPeople === this.game.score.killedPeople) gifImage = "balance";
     if (this.game.score.rescuedPeople === 0) gifImage = "airplane-nervous";
 
-    this.elGifImg.setAttribute("src", `/gifs/${gifImage}.gif`);
+    this.elGifImg.setAttribute("src", `${import.meta.env.VITE_GIF_PATH}/${gifImage}.gif`);
   }
 
   public render(ctx: CanvasRenderingContext2D): void {

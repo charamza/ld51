@@ -7,6 +7,7 @@
     "dev": "concurrently --kill-others 'yarn web:dev' 'yarn server:dev'",
     "web:dev": "VITE_ENV=development vite",
     "web:build": "VITE_ENV=production tsc -p game/tsconfig.json && vite build",
+    "web:build:ldjam": "VITE_ENV=production tsc -p game/tsconfig.json && vite build && cd game/dist && sed -i '' 's/\\/assets/assets/g' index.html && zip -r ../../ldjam.zip . && cd ../..",
     "web:preview": "vite preview",
     "server:dev": "NODE_ENV=development nodemon server/src/index.ts",
     "server:start": "NODE_ENV=production node server/dist/index",

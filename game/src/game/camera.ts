@@ -7,6 +7,7 @@ export default class Camera {
   protected focusedObject: Player | null = null;
   protected zoomOut: number = 3;
   protected zoomOutInterpolated: number = 3;
+  protected pixelDensityScale = 1;
 
   public focusObject(obj: Player) {
     this.focusedObject = obj;
@@ -14,6 +15,10 @@ export default class Camera {
 
   constructor(protected game: Game) {
     this.pos = [0, 0];
+  }
+
+  public get zoomScale(): number {
+    return this.zoomOutInterpolated * this.pixelDensityScale;
   }
 
   public update(dt: number): void {
@@ -30,22 +35,22 @@ export default class Camera {
   }
 
   public translateContext(ctx: CanvasRenderingContext2D): void {
-    const scale = 1 / this.zoomOutInterpolated;
+    const scale = 1 / this.zoomScale;
     ctx.translate(
-      -this.pos[0] / this.zoomOutInterpolated + (this.game.canvasWidth / 2) * 1,
-      -this.pos[1] / this.zoomOutInterpolated + (this.game.canvasHeight / 2) * 1
+      -this.pos[0] / this.zoomScale + (this.game.canvasWidth / 2) * 1,
+      -this.pos[1] / this.zoomScale + (this.game.canvasHeight / 2) * 1
     );
     ctx.scale(scale, scale);
   }
 
   public getBoundingRect(): Vec4 {
     const { canvasWidth, canvasHeight } = this.game;
-    const { zoomOutInterpolated, pos } = this;
+    const { zoomScale, pos } = this;
 
-    const x = pos[0] - (canvasWidth / 2) * zoomOutInterpolated;
-    const y = pos[1] - (canvasHeight / 2) * zoomOutInterpolated;
+    const x = pos[0] - (canvasWidth / 2) * zoomScale;
+    const y = pos[1] - (canvasHeight / 2) * zoomScale;
 
-    return [x, y, x + canvasWidth * zoomOutInterpolated, y + canvasHeight * zoomOutInterpolated];
+    return [x, y, x + canvasWidth * zoomScale, y + canvasHeight * zoomScale];
   }
 
   public getScreen(): Vec4 {
@@ -56,5 +61,9 @@ export default class Camera {
 
   public setZoomOut(zoomOut: number): void {
     this.zoomOut = zoomOut;
+  }
+
+  public onResize(): void {
+    this.pixelDensityScale = 1920 / this.game.canvasWidth;
   }
 }

@@ -27,9 +27,6 @@ export default class Game {
     this.canvas = document.getElementById("game") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    this.onWindowResize();
-    window.addEventListener("resize", () => this.onWindowResize());
-
     this.world = new World(this);
     this.world.create();
 
@@ -37,11 +34,15 @@ export default class Game {
     this.camera.update(0);
     this.gui = new GUI(this);
     this.score = new Score();
+
+    this.onWindowResize();
+    window.addEventListener("resize", () => this.onWindowResize());
   }
 
   private onWindowResize(): void {
     this.canvasWidth = this.canvas.width = window.innerWidth;
     this.canvasHeight = this.canvas.height = window.innerHeight;
+    this.camera.onResize();
   }
 
   public init(): void {
