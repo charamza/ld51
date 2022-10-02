@@ -20,6 +20,7 @@ export default class GUI {
       this.game.start();
       this.elStartScreen.classList.remove("show");
     });
+    setTimeout(() => this.elStartBtn.focus(), 100);
   }
 
   private initGameOverScreen(): void {
@@ -108,7 +109,7 @@ export default class GUI {
       if (obj instanceof Player) color = "#008cff";
       else if (obj instanceof Planet) {
         if (obj.willGetDestroyed()) color = "#d6001d";
-        else color = "white";
+        else color = `rgba(255, 255, 255, ${obj.getEmergingProgress()})`;
       } else {
         // Only render planets and player
         return;

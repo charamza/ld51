@@ -20,7 +20,11 @@ export default class Player extends GameObject {
   public update(dt: number): void {
     const planets = this.world.getObjects(Planet);
     const closestPlanet = planets.reduce<Planet | null>((closest, planet) => {
+      // Still not collidable
+      if (planet.isEmerging()) return closest;
+      // Closest is null, so pick first planet
       if (!closest) return planet;
+      // Check if planet is closer than closest
       if (planet.getDistanceTo(this) < closest.getDistanceTo(this)) {
         return planet;
       }
@@ -49,16 +53,16 @@ export default class Player extends GameObject {
       this.a /= turnSpeedDecel;
       this.emitLeftParticles();
     }
-    if (inputForward) {
-      this.a += frontAccel * normalized;
-      this.emitBackParticles();
-    } else if (inputBack) {
+    if (inputBack) {
       if (this.a > 0) {
         this.a = this.a / (1.01 * normalized) - backAccel * normalized;
       } else {
         this.a = this.a - backAccel * normalized;
       }
       this.emitFrontParticles();
+    } else if (inputForward) {
+      this.a += frontAccel * normalized;
+      this.emitBackParticles();
     } else {
       if (this.a > 10) {
         this.a = this.a / (1.004 * normalized);
@@ -97,6 +101,7 @@ export default class Player extends GameObject {
 
         if (Math.abs(angleDiff) < planetSafeLandingMaxAngle) {
           closestPlanet.moveWithPlanet(this, dt);
+          // console.log("moved with planet");
           this.pos = addVec2(this.pos, angleMovement(this.rot, -(dist + 0.001)));
           closestPlanet.setPlayerOnPlanet(this);
         } else {

@@ -6,10 +6,16 @@ import { getDistance } from "../utils/angles";
 import { aabb } from "../utils/collisions";
 import Game from "./game";
 
+const PlanetsCount = 20;
+const PlanetMinRadius = 400;
+const PlanetMaxRadius = 1400;
+const PlanetsMinGap = 1000;
+const MinCenterGap = 1000;
+
 export default class World {
   private objects: GameObject[] = [];
   private particles: Particle[] = [];
-  public mapRadius: number = 0;
+  public mapRadius: number = 8000;
 
   private cycle: number = 0;
 
@@ -19,67 +25,22 @@ export default class World {
     this.objects = [];
     this.particles = [];
 
-    // this.objects.push(
-    //   new Planet(this, {
-    //     pos: [-1000, -1000],
-    //     size: 1350,
-    //   })
-    // );
-    // this.objects.push(
-    //   new Planet(this, {
-    //     pos: [800, -100],
-    //     size: 350,
-    //   })
-    // );
-
     // const testPlanet = new Planet(this, {
     //   pos: [0, 700],
     //   size: 800,
     // });
-    // testPlanet.startDoomsday();
+    // testPlanet.startEmerging();
     // this.objects.push(testPlanet);
 
+    console.log("Using radius", this.mapRadius);
+
     const planets: Planet[] = [];
-    const planetsCount = 20;
-    const emptySpacePercentage = 0.2;
-    const planetMinRadius = 200;
-    const planetMaxRadius = 1200;
-
-    const sizes = Array(planetsCount)
-      .fill(0)
-      .map(() => Math.random() * (planetMaxRadius - planetMinRadius) + planetMinRadius);
-    const totalPlanetsArea = sizes.map((size) => Math.PI * size * size).reduce((a, b) => a + b, 0);
-
-    const totalSpaceArea = totalPlanetsArea / (1 - emptySpacePercentage);
-    const radius = Math.sqrt(totalSpaceArea / Math.PI);
-    this.mapRadius = radius + planetMaxRadius;
-
-    console.log("Using radius", radius);
-
-    for (let i = 0; i < planetsCount; i++) {
-      let planet: Planet;
-
-      const minDistanceBetweenPlanets = 200;
-
-      for (let j = 0; j < 100; j++) {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * radius + 1000;
-
-        planet = new Planet(this, {
-          pos: [Math.cos(angle) * distance, Math.sin(angle) * distance],
-          size: sizes[i],
-        });
-
-        const collidesWith = planets.find((otherPlanet) => otherPlanet.getDistanceTo(planet) < minDistanceBetweenPlanets);
-        if (!collidesWith) break;
-
-        planet = null;
-      }
-
+    for (let i = 0; i < PlanetsCount; i++) {
+      const planet = this.createNewPlanet(planets);
       if (planet) {
+        planet.createResidents();
         planets.push(planet);
-      } else {
-        console.log("Couldn't place planet");
+        this.objects.push(planet);
       }
     }
 
@@ -114,7 +75,7 @@ export default class World {
     this.objects = this.objects.filter((object) => !object.toBeDeleted());
     this.particles = this.particles.filter((particle) => !particle.isDead());
 
-    const cycleEachMs = 12 * 1000;
+    const cycleEachMs = 14 * 1000;
     const actualCycle = Math.floor(Date.now() / cycleEachMs);
     if (actualCycle !== this.cycle) {
       this.cycle = actualCycle;
@@ -123,6 +84,12 @@ export default class World {
       if (planets.length > 0 && this.game.playing) {
         const planet = planets[Math.floor(Math.random() * planets.length)];
         planet.startDoomsday();
+
+        const newPlanet = this.createNewPlanet(planets);
+        if (newPlanet) {
+          newPlanet.startEmerging();
+          this.objects.push(newPlanet);
+        }
       }
     }
   }
@@ -167,5 +134,28 @@ export default class World {
     ctx.stroke();
 
     ctx.restore();
+  }
+
+  public createNewPlanet(otherPlanets: Planet[]): Planet | null {
+    let planet: Planet;
+
+    for (let j = 0; j < 300; j++) {
+      const angle = Math.random() * Math.PI * 2;
+      const size = Math.random() * (PlanetMaxRadius - PlanetMinRadius) + PlanetMinRadius;
+      const distance = Math.random() * (this.mapRadius - MinCenterGap - size) + MinCenterGap;
+
+      planet = new Planet(this, {
+        pos: [Math.cos(angle) * distance, Math.sin(angle) * distance],
+        size,
+      });
+
+      const collidesWith = otherPlanets.find((otherPlanet) => otherPlanet.getDistanceTo(planet) < PlanetsMinGap);
+      if (!collidesWith) break;
+
+      planet = null;
+    }
+
+    if (!planet) console.log("Couldn't place planet");
+    return planet;
   }
 }

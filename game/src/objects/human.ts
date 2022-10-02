@@ -15,7 +15,7 @@ export default class Human extends PlanetObject {
     super(planet, { size: [4, 12] });
 
     this.rot = Math.random() * 360;
-    this.dx = (Math.random() * 1 + 1) * (Math.random() < 0.5 ? -1 : 1);
+    this.dx = (Math.random() * 1 + 1.1) * (Math.random() < 0.5 ? -1 : 1);
     this.bodyColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
     this.headColor = headColors[Math.floor(Math.random() * headColors.length)];
     this.handsOffset = Math.random() * 1000;

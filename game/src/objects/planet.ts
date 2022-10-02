@@ -1,8 +1,9 @@
 import World from "../game/world";
 import ExplosionParticle from "../particles/explosionParticle";
 import ImplosionParticle from "../particles/ImplosionParticle";
-import { toRads } from "../utils/angles";
-import { Vec2 } from "../utils/vectors";
+import { angleMovement, toRads } from "../utils/angles";
+import { hexColorToRgb } from "../utils/colors";
+import { addVec2, lerp, Vec2, Vec3 } from "../utils/vectors";
 import GameObject from "./gameObject";
 import House from "./house";
 import Human from "./human";
@@ -16,6 +17,13 @@ type ColorSpot = {
   size: number;
 };
 
+type EmergingSpot = {
+  angle: Vec2;
+  size: Vec2;
+  color: Vec3;
+  offset: number;
+};
+
 const colorSchemas = [
   ["#A77979", "#704F4F", "#553939", "#472D2D"],
   ["#874C62", "#C98474", "#F2D388", "#A7D2CB"],
@@ -23,16 +31,30 @@ const colorSchemas = [
   ["#FCFFB2", "#B6E388", "#C7F2A4", "#E1FFB1"],
 ];
 
-const DoomsdayInMillis = 10 * 1000;
+const heatColors: Vec3[] = [
+  [235, 64, 52],
+  [235, 64, 52],
+  [155, 36, 1],
+];
+
+const DoomsdayInMillis = 12 * 1000;
 const DoomsdayLatencyInMillis = 1 * 1000;
+
+const PlanetEmergingInMillis = 5 * 1000;
+const PlanetEmergingLatencyInMillis = 1 * 1000;
+const PlanetMaxBuildTimeInMillis = 20 * 1000;
 
 export default class Planet extends GameObject {
   protected color: string = "#ffffff";
   protected rotSpeed: number;
-  protected _doomsdayEnd: number | null = null;
   protected _playerOnPlanet: number | null = null;
 
+  protected _isEmerging = false;
+  protected _emergingEnd: number | null = null;
+  protected _doomsdayEnd: number | null = null;
+
   protected colorSpots: ColorSpot[] = [];
+  protected emergingSpots: EmergingSpot[] = [];
 
   protected objects: PlanetObject[] = [];
 
@@ -54,29 +76,39 @@ export default class Planet extends GameObject {
         size: randomSize,
       });
     }
-
-    this.createResidents();
   }
 
-  public createResidents(): void {
-    const scalar = Math.floor(this.size[0] / 400);
-    const numTrees = Math.floor(Math.random() * 10 + 10) * scalar;
+  public createResidents(emerging: boolean = false): void {
+    const scalar = Math.round(this.size[0] / 400);
+    const numTrees = Math.floor(Math.random() * 3 + 3) * scalar;
     const numHouses = Math.floor(Math.random() * 5 + 5) * scalar;
     const numResidents = Math.floor(Math.random() * 10 + 10) * scalar;
 
+    const createObject = (creator: () => PlanetObject) => {
+      const create = () => {
+        const obj = creator();
+        this.objects.push(obj);
+        obj.update(0);
+      };
+
+      if (emerging) {
+        setTimeout(create, Math.random() * PlanetMaxBuildTimeInMillis + PlanetEmergingLatencyInMillis);
+      } else {
+        create();
+      }
+    };
+
     for (let i = 0; i < numTrees; i++) {
-      this.objects.push(new Tree(this));
+      createObject(() => new Tree(this));
     }
 
     for (let i = 0; i < numHouses; i++) {
-      this.objects.push(new House(this));
+      createObject(() => new House(this));
     }
 
     for (let i = 0; i < numResidents; i++) {
-      this.objects.push(new Human(this));
+      createObject(() => new Human(this));
     }
-
-    this.objects.forEach((obj) => obj.update(0));
   }
 
   public update(dt: number): void {
@@ -88,6 +120,13 @@ export default class Planet extends GameObject {
       this.destroyPlanet();
     }
 
+    if (this.isEmerging()) {
+      const progress = this.getEmergingProgress();
+      if (progress >= 1) {
+        this.endEmerging();
+      }
+    }
+
     this.objects.forEach((obj) => obj.update(dt));
     this.objects = this.objects.filter((obj) => !obj.toBeDeleted());
   }
@@ -95,6 +134,18 @@ export default class Planet extends GameObject {
   public render(ctx: CanvasRenderingContext2D): void {
     super.render(ctx);
 
+    if (this.isEmerging()) {
+      this.renderEmerging(ctx);
+    } else {
+      this.renderPlanet(ctx);
+
+      this.objects.forEach((obj) => obj.render(ctx));
+
+      this.renderDoomsday(ctx);
+    }
+  }
+
+  private renderPlanet(ctx: CanvasRenderingContext2D): void {
     const { pos, size, color } = this;
     const radius = size[0] / 2;
 
@@ -129,10 +180,38 @@ export default class Planet extends GameObject {
     ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
 
     ctx.restore();
+  }
 
-    this.objects.forEach((obj) => obj.render(ctx));
+  private renderEmerging(ctx: CanvasRenderingContext2D): void {
+    const progress = this.getEmergingProgress();
 
-    this.renderDoomsday(ctx);
+    const { pos, size } = this;
+    const radius = (size[0] / 2) * progress;
+
+    ctx.save();
+
+    ctx.translate(...pos);
+    ctx.rotate(toRads(this.rot));
+
+    ctx.beginPath();
+    ctx.arc(0, 0, size[0] / 2, 0, Math.PI * 2);
+    ctx.clip();
+
+    for (let i = 0; i < this.emergingSpots.length; i++) {
+      const spot = this.emergingSpots[i];
+      const heatColor = heatColors[Math.floor((heatColors.length * i) / this.emergingSpots.length)];
+      const rgb = spot.color.map((c, i) => lerp(heatColor[i], c, progress)).join(",");
+      ctx.fillStyle = `rgba(${rgb},${progress * 1})`;
+      const angle = lerp(...spot.angle, progress);
+      const size = lerp(...spot.size, progress);
+      const offset: Vec2 = angleMovement(angle, (radius * 1.5 - size) * spot.offset);
+
+      ctx.beginPath();
+      ctx.arc(...offset, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
   private renderDoomsday(ctx: CanvasRenderingContext2D): void {
@@ -160,11 +239,12 @@ export default class Planet extends GameObject {
     const radius = size[0] / 2 + gameObj.getSize()[1] / 2;
 
     const angleToObj = this.getAngleTo(gameObj);
+    const newAngle = angleToObj + rotSpeed * dt * 2;
 
     const rads1 = toRads(angleToObj);
-    const rads2 = toRads(angleToObj + rotSpeed * dt);
+    const rads2 = toRads(newAngle);
     gameObj.movePos([(Math.sin(rads2) - Math.sin(rads1)) * radius, -(Math.cos(rads2) - Math.cos(rads1)) * radius]);
-    gameObj.setRot(angleToObj);
+    gameObj.setRot(newAngle);
   }
 
   public getObjects<T extends PlanetObject = PlanetObject>(typeT?: new (...params: unknown[]) => T): T[] {
@@ -205,13 +285,27 @@ export default class Planet extends GameObject {
     this.world.game.score.rescuedPeople++;
   }
 
-  public startDoomsday(): void {
-    this._doomsdayEnd = Date.now() + DoomsdayInMillis;
-  }
-
   public getDoomsdayProgress(): number {
     if (this._doomsdayEnd === null) return 0;
     return Math.min(1, 1 - (this._doomsdayEnd - Date.now()) / DoomsdayInMillis);
+  }
+
+  public getEmergingProgress(): number | null {
+    if (this._emergingEnd === null) return 1;
+    return Math.min(1, 1 - (this._emergingEnd - Date.now()) / PlanetEmergingInMillis);
+  }
+
+  public isEmerging(): boolean {
+    return this._isEmerging;
+  }
+
+  public startDoomsday(): Promise<void> {
+    this._doomsdayEnd = Date.now() + DoomsdayInMillis;
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, DoomsdayInMillis);
+    });
   }
 
   public destroyPlanet(): void {
@@ -232,5 +326,28 @@ export default class Planet extends GameObject {
     }
 
     this.world.add(new ImplosionParticle(this.world, this.pos, [this.size[0] * 1.1, this.size[1] * 1.1]));
+  }
+
+  public startEmerging(): void {
+    this._isEmerging = true;
+    this._emergingEnd = Date.now() + PlanetEmergingInMillis;
+
+    const radius = this.size[0] / 2;
+
+    for (let i = 0; i < this.colorSpots.length; i++) {
+      this.emergingSpots.push({
+        angle: [i * (360 / this.colorSpots.length), (Math.random() * 720 - 360) * 5],
+        size: [Math.random() * 10 + 5, (radius / 4) * Math.random() + radius / 2],
+        color: hexColorToRgb(this.colorSpots[i].color),
+        offset: Math.random(),
+      });
+    }
+  }
+
+  private endEmerging(): void {
+    this._isEmerging = false;
+    this._emergingEnd = null;
+
+    this.createResidents(true);
   }
 }

@@ -18,6 +18,8 @@ async function main() {
   Input.init();
   const game = new Game();
   game.init();
+
+  document.getElementById("screens").style.display = "";
 }
 
 main();
