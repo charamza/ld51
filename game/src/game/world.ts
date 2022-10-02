@@ -25,12 +25,12 @@ export default class World {
     this.objects = [];
     this.particles = [];
 
-    const testPlanet = new Planet(this, {
-      pos: [0, 700],
-      size: 800,
-    });
-    testPlanet.startEmerging();
-    this.objects.push(testPlanet);
+    // const testPlanet = new Planet(this, {
+    //   pos: [0, 700],
+    //   size: 800,
+    // });
+    // testPlanet.startEmerging();
+    // this.objects.push(testPlanet);
 
     console.log("Using radius", this.mapRadius);
 
