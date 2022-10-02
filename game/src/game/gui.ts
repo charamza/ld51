@@ -97,20 +97,28 @@ export default class GUI {
     }
   }
 
-  public renderEnteringInterstellarBack(ctx: CanvasRenderingContext2D): void {
+  public renderEnteringInterstellarBack(ctx: CanvasRenderingContext2D, further: 1 | 2 | 3): void {
     const screen = this.game.camera.getScreen();
-    ctx.fillStyle = "rgba(255, 64, 64, 0.5)";
+    ctx.fillStyle = further === 1 ? "rgba(255, 64, 64, 0.5)" : further === 2 ? "rgba(255, 255, 255, 0.6)" : "white";
     ctx.fillRect(...screen);
   }
 
-  public renderEnteringInterstellarFront(ctx: CanvasRenderingContext2D): void {
+  public renderEnteringInterstellarFront(ctx: CanvasRenderingContext2D, further: 1 | 2 | 3): void {
     const screen = this.game.camera.getScreen();
-    ctx.fillStyle = "white";
+    ctx.fillStyle = further < 3 ? "white" : "black";
     ctx.font = "bold 50px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("Entering Interstellar Space", screen[0] + screen[2] / 2, screen[1] + screen[3] / 2 + 128);
+    ctx.fillText(
+      further === 1 ? "Entering Interstellar Space" : further === 2 ? "Cooper, it is impossible!" : "You know too much.",
+      screen[0] + screen[2] / 2,
+      screen[1] + screen[3] / 2 + 128
+    );
     ctx.font = "bold 30px Arial";
-    ctx.fillText("Please return back", screen[0] + screen[2] / 2, screen[1] + screen[3] / 2 + 192);
+    ctx.fillText(
+      further === 1 ? "Please return back" : further === 2 ? "No, it is necessary!" : "We will send you to the future.",
+      screen[0] + screen[2] / 2,
+      screen[1] + screen[3] / 2 + 192
+    );
   }
 
   private renderMinimap(ctx: CanvasRenderingContext2D): void {

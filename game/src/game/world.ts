@@ -2,6 +2,7 @@ import GameObject from "../objects/gameObject";
 import Particle from "../objects/particle";
 import Planet from "../objects/planet";
 import Player from "../objects/player";
+import ImplosionParticle from "../particles/ImplosionParticle";
 import { getDistance } from "../utils/angles";
 import { aabb } from "../utils/collisions";
 import Game from "./game";
@@ -16,6 +17,7 @@ export default class World {
   private objects: GameObject[] = [];
   private particles: Particle[] = [];
   public mapRadius: number = 8000;
+  private playerSentBack = false;
 
   private cycle: number = this.getCycle();
 
@@ -97,12 +99,24 @@ export default class World {
         }
       }
     }
+
+    const isPlayerInterstellar = this.isPlayerInterstellar();
+    if (isPlayerInterstellar === 3 && !this.playerSentBack) {
+      this.playerSentBack = true;
+      setTimeout(() => {
+        this.playerSentBack = false;
+        const player = this.player;
+        player.setPos([0, 0]);
+        player.setAcceleration(0);
+        this.add(new ImplosionParticle(this, [0, 0], [10000, 10000]));
+      }, 2000);
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
     const isPlayerInterstellar = this.isPlayerInterstellar();
     if (isPlayerInterstellar) {
-      this.game.gui.renderEnteringInterstellarBack(ctx);
+      this.game.gui.renderEnteringInterstellarBack(ctx, isPlayerInterstellar);
     }
 
     this.renderBorder(ctx);
@@ -110,17 +124,20 @@ export default class World {
     this.particles.forEach((particle) => particle.render(ctx));
 
     if (isPlayerInterstellar) {
-      this.game.gui.renderEnteringInterstellarFront(ctx);
+      this.game.gui.renderEnteringInterstellarFront(ctx, isPlayerInterstellar);
     }
   }
 
-  private isPlayerInterstellar(): boolean {
+  private isPlayerInterstellar(): 0 | 1 | 2 | 3 {
     const playerPos = this.player?.getPos();
 
-    if (!playerPos) return false;
+    if (!playerPos) return 0;
 
     const playerDistFromCenter = getDistance(playerPos, [0, 0]);
-    return playerDistFromCenter > this.mapRadius;
+    if (playerDistFromCenter > this.mapRadius * 4) return 3;
+    if (playerDistFromCenter > this.mapRadius * 2) return 2;
+    if (playerDistFromCenter > this.mapRadius) return 1;
+    return 0;
   }
 
   private renderBorder(ctx: CanvasRenderingContext2D): void {

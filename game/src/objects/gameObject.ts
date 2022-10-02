@@ -29,6 +29,10 @@ export default class GameObject {
     this.pos = addVec2(this.pos, dpos);
   }
 
+  public setPos(pos: Vec2): void {
+    this.pos = pos;
+  }
+
   public getSize(): Vec2 {
     return this.size;
   }
