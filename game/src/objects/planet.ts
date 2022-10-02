@@ -1,4 +1,6 @@
 import World from "../game/world";
+import ExplosionParticle from "../particles/explosionParticle";
+import ImplosionParticle from "../particles/ImplosionParticle";
 import { toRads } from "../utils/angles";
 import { Vec2 } from "../utils/vectors";
 import GameObject from "./gameObject";
@@ -21,10 +23,13 @@ const colorSchemas = [
   ["#FCFFB2", "#B6E388", "#C7F2A4", "#E1FFB1"],
 ];
 
+const DoomsdayInMillis = 10 * 1000;
+const DoomsdayLatencyInMillis = 1 * 1000;
+
 export default class Planet extends GameObject {
   protected color: string = "#ffffff";
   protected rotSpeed: number;
-  protected _toBeDestroyed: boolean = false;
+  protected _doomsdayEnd: number | null = null;
   protected _playerOnPlanet: number | null = null;
 
   protected colorSpots: ColorSpot[] = [];
@@ -49,8 +54,6 @@ export default class Planet extends GameObject {
         size: randomSize,
       });
     }
-
-    this._toBeDestroyed = Math.random() < 0.1;
 
     this.createResidents();
   }
@@ -80,6 +83,10 @@ export default class Planet extends GameObject {
     super.update(dt);
 
     this.rot += this.rotSpeed * dt;
+
+    if (this._doomsdayEnd !== null && Date.now() > this._doomsdayEnd + DoomsdayLatencyInMillis) {
+      this.destroyPlanet();
+    }
 
     this.objects.forEach((obj) => obj.update(dt));
     this.objects = this.objects.filter((obj) => !obj.toBeDeleted());
@@ -112,9 +119,40 @@ export default class Planet extends GameObject {
       ctx.fill();
     }
 
+    const gradient = ctx.createRadialGradient(0, 0, radius / 2, 0, 0, radius);
+
+    gradient.addColorStop(0, "transparent");
+    gradient.addColorStop(0.9, "rgba(0,0,0,0.3)");
+    gradient.addColorStop(1, "rgba(0,0,0,0.2)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+
     ctx.restore();
 
     this.objects.forEach((obj) => obj.render(ctx));
+
+    this.renderDoomsday(ctx);
+  }
+
+  private renderDoomsday(ctx: CanvasRenderingContext2D): void {
+    const progress = this.getDoomsdayProgress();
+    if (progress === null) return;
+
+    const { pos, size } = this;
+    const radius = (size[0] / 2) * progress;
+    const colorPulse = (Math.sin((Date.now() / 1000) * Math.PI) + 1) / 4 + 0.25;
+
+    ctx.save();
+
+    ctx.translate(pos[0], pos[1]);
+
+    ctx.fillStyle = `rgba(255,0,0,${colorPulse})`;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
   }
 
   public moveWithPlanet(gameObj: GameObject, dt: number): void {
@@ -135,7 +173,7 @@ export default class Planet extends GameObject {
   }
 
   public willGetDestroyed(): boolean {
-    return this._toBeDestroyed;
+    return this._doomsdayEnd !== null;
   }
 
   public getRotSpeed(): number {
@@ -161,7 +199,38 @@ export default class Planet extends GameObject {
   }
 
   public setHumanReadyForPickup(human: Human): void {
+    if (human.toBeDeleted()) return;
+
     human.delete();
     this.world.game.score.rescuedPeople++;
+  }
+
+  public startDoomsday(): void {
+    this._doomsdayEnd = Date.now() + DoomsdayInMillis;
+  }
+
+  public getDoomsdayProgress(): number {
+    if (this._doomsdayEnd === null) return 0;
+    return Math.min(1, 1 - (this._doomsdayEnd - Date.now()) / DoomsdayInMillis);
+  }
+
+  public destroyPlanet(): void {
+    this.delete();
+
+    const player = this.world.player;
+    if (player) {
+      const dist = this.getDistanceTo(player);
+      if (dist < 32) {
+        player.die();
+      }
+    }
+
+    for (let i = 0; i < 1000; i++) {
+      const size = Math.random() * 10 + 5;
+
+      this.world.add(new ExplosionParticle(this.world, this.pos, [size, size], this.size[0] / 2, 10 + Math.random() * 100));
+    }
+
+    this.world.add(new ImplosionParticle(this.world, this.pos, [this.size[0] * 1.1, this.size[1] * 1.1]));
   }
 }

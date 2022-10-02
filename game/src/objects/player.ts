@@ -1,4 +1,5 @@
 import World from "../game/world";
+import ExplosionParticle from "../particles/explosionParticle";
 import { angleMovement, clamp, getAnglesDiff, toRads } from "../utils/angles";
 import Input from "../utils/input";
 import { addVec2, subVec2, Vec2 } from "../utils/vectors";
@@ -26,27 +27,32 @@ export default class Player extends GameObject {
       return closest;
     }, null);
 
-    const frontAccel = 0.05;
-    const backAccel = 0.025;
+    const frontAccel = 0.1;
+    const backAccel = 0.05;
     const turnAccel = 5;
     const turnSpeedDecel = 1.02;
     const planetSafeLandingMaxAngle = 40;
     const normalized = dt / 0.016;
 
-    if (Input.isKeyDown("ArrowLeft")) {
+    const inputForward = Input.isKeyDown("w") || Input.isKeyDown("ArrowUp");
+    const inputBack = Input.isKeyDown("s") || Input.isKeyDown("ArrowDown") || Input.isKeyDown(" ");
+    const inputLeft = Input.isKeyDown("a") || Input.isKeyDown("ArrowLeft");
+    const inputRight = Input.isKeyDown("d") || Input.isKeyDown("ArrowRight");
+
+    if (inputLeft) {
       this.rot -= turnAccel * normalized;
       this.a /= turnSpeedDecel;
       this.emitRightParticles();
     }
-    if (Input.isKeyDown("ArrowRight")) {
+    if (inputRight) {
       this.rot += turnAccel * normalized;
       this.a /= turnSpeedDecel;
       this.emitLeftParticles();
     }
-    if (Input.isKeyDown("ArrowUp")) {
+    if (inputForward) {
       this.a += frontAccel * normalized;
       this.emitBackParticles();
-    } else if (Input.isKeyDown("ArrowDown")) {
+    } else if (inputBack) {
       if (this.a > 0) {
         this.a = this.a / (1.01 * normalized) - backAccel * normalized;
       } else {
@@ -66,7 +72,7 @@ export default class Player extends GameObject {
     if (closestPlanet) {
       const planetAngle = this.getAngleTo(closestPlanet);
       const planetDistance = closestPlanet.getDistanceTo(this);
-      const planetInfluence = 1 - clamp(planetDistance / 500, 0.2, 1); // 0.0 - 0.8
+      const planetInfluence = 1 - clamp(planetDistance / 500, 0.02, 1); // 0.0 - 0.98
       const planetWeight = 6; //closestPlanet.getSize()[0] / 60;
 
       const planetAngleDiff = getAnglesDiff(this.rot, planetAngle);
@@ -87,16 +93,14 @@ export default class Player extends GameObject {
       const angleDiff = getAnglesDiff(planetAngle, this.rot);
 
       if (dist <= 0) {
-        if (!(Input.isKeyDown("ArrowUp") && Math.abs(angleDiff) < planetSafeLandingMaxAngle)) this.a = 0;
+        if (!(inputForward && Math.abs(angleDiff) < planetSafeLandingMaxAngle)) this.a = 0;
 
         if (Math.abs(angleDiff) < planetSafeLandingMaxAngle) {
           closestPlanet.moveWithPlanet(this, dt);
           this.pos = addVec2(this.pos, angleMovement(this.rot, -(dist + 0.001)));
           closestPlanet.setPlayerOnPlanet(this);
         } else {
-          this.emitCrashParticles();
-          this.delete();
-          this.world.game.gameOver();
+          this.die();
         }
       } else {
         closestPlanet.setPlayerOnPlanet(null);
@@ -170,27 +174,14 @@ export default class Player extends GameObject {
     }
   }
 
-  private emitCrashParticles(): void {
-    for (let i = 0; i < 1000; i++) {
-      const r = Math.floor(Math.random() * 4);
-      let color = "#ff5733";
-      if (r === 1) color = "#C70039";
-      if (r === 2) color = "#900C3F";
-      if (r === 3) color = "#581845";
+  public die(): void {
+    this.delete();
+    this.world.game.gameOver();
 
+    for (let i = 0; i < 1000; i++) {
       const size = Math.random() * 10 + 5;
-      this.world.add(
-        new Particle(this.world, {
-          pos: [this.pos[0], this.pos[1]],
-          size: [size, size],
-          rot: Math.random() * 360,
-          a: 80 / (15.5 - size),
-          scale: 1,
-          opacity: 1,
-          decayIn: 3,
-          color,
-        })
-      );
+
+      this.world.add(new ExplosionParticle(this.world, this.pos, [size, size]));
     }
   }
 

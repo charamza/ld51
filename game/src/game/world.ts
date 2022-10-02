@@ -11,6 +11,8 @@ export default class World {
   private particles: Particle[] = [];
   public mapRadius: number = 0;
 
+  private cycle: number = 0;
+
   constructor(public game: Game) {}
 
   public create(): Player {
@@ -29,12 +31,13 @@ export default class World {
     //     size: 350,
     //   })
     // );
-    // this.objects.push(
-    //   new Planet(this, {
-    //     pos: [800, 800],
-    //     size: 350,
-    //   })
-    // );
+
+    // const testPlanet = new Planet(this, {
+    //   pos: [0, 700],
+    //   size: 800,
+    // });
+    // testPlanet.startDoomsday();
+    // this.objects.push(testPlanet);
 
     const planets: Planet[] = [];
     const planetsCount = 20;
@@ -110,6 +113,18 @@ export default class World {
 
     this.objects = this.objects.filter((object) => !object.toBeDeleted());
     this.particles = this.particles.filter((particle) => !particle.isDead());
+
+    const cycleEachMs = 12 * 1000;
+    const actualCycle = Math.floor(Date.now() / cycleEachMs);
+    if (actualCycle !== this.cycle) {
+      this.cycle = actualCycle;
+      const planets = this.getObjects(Planet);
+
+      if (planets.length > 0) {
+        const planet = planets[Math.floor(Math.random() * planets.length)];
+        planet.startDoomsday();
+      }
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
