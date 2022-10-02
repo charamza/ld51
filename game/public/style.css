@@ -64,6 +64,13 @@ button {
   font-weight: bold;
   display: block;
   text-align: center;
+  margin-top: 24px;
+}
+
+.made-with {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 12px;
 }
 
 @keyframes screen-in {

@@ -21,7 +21,7 @@ export default class World {
 
   constructor(public game: Game) {}
 
-  public create(): Player {
+  public create(): void {
     this.objects = [];
     this.particles = [];
 
@@ -45,7 +45,9 @@ export default class World {
     }
 
     this.objects.push(...planets);
+  }
 
+  public createPlayer(): Player {
     const player = new Player(this, {
       pos: [0, 0],
     });

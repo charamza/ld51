@@ -27,15 +27,11 @@ export default class Game {
     window.addEventListener("resize", () => this.onWindowResize());
 
     this.world = new World(this);
-    const player = this.world.create();
+    this.world.create();
 
     this.camera = new Camera(this);
-    // this.camera.focusObject(player);
     this.camera.update(0);
-
     this.gui = new GUI(this);
-    // this.paused = true;
-
     this.score = new Score();
   }
 
@@ -90,14 +86,16 @@ export default class Game {
   }
 
   public start(): void {
-    this.camera.focusObject(this.world.player);
+    const player = this.world.createPlayer();
+    this.camera.focusObject(player);
     this.paused = false;
     this.playing = true;
     this.score.reset();
   }
 
   public restart(): void {
-    const player = this.world.create();
+    this.world.create();
+    const player = this.world.createPlayer();
     this.camera.focusObject(player);
     this.playing = true;
     this.score.reset();
