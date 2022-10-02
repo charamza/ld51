@@ -24,7 +24,7 @@ export default class Human extends PlanetObject {
   public update(dt: number): void {
     const playerOnPlanet = this.planet.getPlayerOnPlanet();
     const runningSpeed = Math.abs(this.dx) * 15;
-    if (playerOnPlanet) {
+    if (playerOnPlanet && this.planet.willGetDestroyed()) {
       const diff = getAnglesDiff(this.rot, playerOnPlanet);
       if (diff > 0) {
         this.rot -= runningSpeed * dt;

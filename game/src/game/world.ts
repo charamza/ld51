@@ -120,7 +120,7 @@ export default class World {
       this.cycle = actualCycle;
       const planets = this.getObjects(Planet);
 
-      if (planets.length > 0) {
+      if (planets.length > 0 && this.game.playing) {
         const planet = planets[Math.floor(Math.random() * planets.length)];
         planet.startDoomsday();
       }

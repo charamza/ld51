@@ -1,5 +1,6 @@
 import Planet from "../objects/planet";
 import Player from "../objects/player";
+import { FONT_NAME } from "../utils/consts";
 import { Vec2 } from "../utils/vectors";
 import Game from "./game";
 
@@ -126,7 +127,7 @@ export default class GUI {
     ctx.save();
 
     ctx.fillStyle = "white";
-    ctx.font = "bold 18px Arial";
+    ctx.font = `bold 18px ${FONT_NAME}`;
     ctx.textAlign = "right";
     ctx.fillText("Rescued people:  ".toUpperCase() + this.game.score.rescuedPeople, this.game.canvasWidth - 14, 50 + 200);
 

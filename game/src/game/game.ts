@@ -1,3 +1,4 @@
+import { FONT_NAME } from "../utils/consts";
 import Camera from "./camera";
 import GUI from "./gui";
 import Score from "./score";
@@ -76,6 +77,7 @@ export default class Game {
   }
 
   public render(): void {
+    this.ctx.font = `20px ${FONT_NAME}`;
     this.ctx.fillStyle = "#000000";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 

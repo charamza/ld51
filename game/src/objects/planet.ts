@@ -220,7 +220,7 @@ export default class Planet extends GameObject {
     const player = this.world.player;
     if (player) {
       const dist = this.getDistanceTo(player);
-      if (dist < 32) {
+      if (dist < 24) {
         player.die();
       }
     }
